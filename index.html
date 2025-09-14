@@ -1,0 +1,450 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Chery Solo</title>
+  <style>
+    :root{
+      --red: #e11d23;
+      --bg: #ffffff;
+      --text: #111827;
+      --muted: #6b7280;
+      --radius: 12px;
+    }
+    *{box-sizing: border-box;margin:0;padding:0}
+    body{font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; background:#fff; color:var(--text)}
+    html { scroll-behavior: smooth; }
+
+    /* Navbar */
+    .navbar{width:100%;background:var(--bg);padding:12px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px;box-shadow:0 6px 18px rgba(16,24,40,0.06);position:sticky;top:0;z-index:50;}
+    .brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--text)}
+    .brand .logo{width:40px;height:40px;border-radius:8px;background:linear-gradient(135deg,var(--red),#fb7185);display:flex;align-items:center;justify-content:center;color:white;font-weight:700}
+    .nav-links{display:flex;align-items:center;gap:16px;list-style:none}
+    .nav-links a{position:relative;text-decoration:none;padding:8px 4px;color:var(--muted);font-weight:600;transition:color .18s ease;cursor:pointer}
+    .nav-links a::after{content:'';position:absolute;left:0;right:0;bottom:-4px;height:3px;background:var(--red);transform:scaleX(0);transform-origin:left center;transition:transform .22s cubic-bezier(.2,.9,.2,1);border-radius:4px}
+    .nav-links a:hover{color:var(--text)}
+    .nav-links a:hover::after{transform:scaleX(1)}
+    .nav-links a.active{color:var(--text)}
+    .nav-links a.active::after{transform:scaleX(1)}
+    .cta{padding:8px 12px;border-radius:10px;background:linear-gradient(90deg,var(--red),#fb7185);color:white;font-weight:700;border:none;cursor:pointer;box-shadow:0 6px 12px rgba(225,29,35,0.12)}
+    .hamburger{display:none;background:transparent;border:0;cursor:pointer;padding:8px;border-radius:8px}
+    .hamburger span{display:block;width:22px;height:2px;background:var(--text);border-radius:2px;position:relative}
+    .hamburger span::before,.hamburger span::after{content:'';position:absolute;left:0;width:22px;height:2px;border-radius:2px;background:var(--text)}
+    .hamburger span::before{top:-7px}
+    .hamburger span::after{top:7px}
+    @media(max-width:780px){
+      .nav-links{display:none;position:absolute;left:0;right:0;top:64px;background:var(--bg);flex-direction:column;padding:12px 18px;gap:8px;border-bottom-left-radius:var(--radius);border-bottom-right-radius:var(--radius);box-shadow:0 14px 40px rgba(16,24,40,0.06)}
+      .nav-links.show{display:flex}
+      .cta{display:none}
+      .hamburger{display:inline-flex}
+    }
+
+    /* Carousel */
+    .carousel{position:relative;width:100%;height:90vh;overflow:hidden}
+    .carousel-track{display:flex;transition:transform 0.6s ease-in-out;height:100%}
+    .carousel-slide{min-width:100%;height:100%}
+    .carousel-slide img{width:100%;height:100%;object-fit:cover}
+    .carousel-indicators{position:absolute;bottom:15px;left:50%;transform:translateX(-50%);display:flex;gap:8px}
+    .carousel-indicators div{width:12px;height:12px;border-radius:50%;background:#ddd;cursor:pointer;transition:background 0.3s}
+    .carousel-indicators .active{background:var(--red)}
+    .carousel button{position:absolute;top:50%;transform:translateY(-50%);background:rgba(0,0,0,0.5);border:none;color:#fff;font-size:24px;padding:10px;cursor:pointer;border-radius:50%}
+    .carousel .prev{left:15px}
+    .carousel .next{right:15px}
+
+    /* Cards Section */
+    .cards-section{padding:60px 20px;background:#f9fafb;position:relative}
+    .cards-container{display:flex;gap:20px;overflow-x:auto;scroll-behavior:smooth;padding-bottom:12px}
+    .card{min-width:260px;background:white;border-radius:var(--radius);box-shadow:0 6px 12px rgba(16,24,40,0.1);flex:0 0 auto;padding:15px;text-align:center}
+    .card img{width:100%;height:160px;object-fit:cover;border-radius:8px;margin-bottom:12px}
+    .card h3{margin-bottom:8px;font-size:18px}
+    .card p{font-size:14px;color:var(--muted);margin-bottom:12px}
+    .card button{padding:8px 14px;background:var(--red);color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:600}
+
+    /* Scroll Buttons */
+    .scroll-btn{position:absolute;top:50%;transform:translateY(-50%);background:var(--red);color:#fff;border:none;border-radius:50%;width:40px;height:40px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 8px rgba(0,0,0,0.15)}
+    .scroll-btn.left{left:10px}
+    .scroll-btn.right{right:10px}
+
+    /* Modal */
+    #detailModal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);align-items:center;justify-content:center;z-index:2000}
+    #detailModal.active{display:flex}
+    #modalContent{background:#fff;padding:20px;border-radius:12px;max-width:500px;width:90%;text-align:center;position:relative}
+    #modalContent img{width:100%;border-radius:8px;margin-bottom:15px}
+    #modalContent h3{margin-bottom:10px}
+    #modalContent p{font-weight:bold;color:#e11d23;font-size:18px}
+    #modalContent .close{position:absolute;top:10px;right:15px;font-size:22px;cursor:pointer;color:#333}
+
+    /* Feature Section */
+    .features-section{padding:60px 20px;background:#fff}
+    .features-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:20px;max-width:600px;margin:0 auto}
+    .feature-card{background:#f9fafb;border-radius:var(--radius);padding:30px;text-align:center;font-weight:600;cursor:pointer;transition:all 0.25s ease}
+    .feature-card:hover{background:var(--red);color:#fff;}
+
+    /* Footer */
+    .footer {background: linear-gradient(to bottom, #1a0a0a, #000);color: #fff;padding: 50px 20px 20px;}
+    .footer-container {display: flex;justify-content: space-between;flex-wrap: wrap;max-width: 1200px;margin: auto;}
+    .footer-col {flex: 1;margin: 10px 20px;min-width: 220px;}
+    .footer-col h3 {font-size: 18px;margin-bottom: 15px;font-weight: bold;}
+    .footer-col ul {list-style: none;padding: 0;}
+    .footer-col ul li {margin-bottom: 8px;}
+    .footer-col ul li a {color: #bbb;text-decoration: none;transition: color 0.3s;}
+    .footer-col ul li a:hover {color: red;}
+    .social-icons {margin-top: 15px;}
+    .social-icons a {margin-right: 12px;color: #fff;font-size: 20px;transition: color 0.3s;}
+    .social-icons a:hover {color: red;}
+    .footer-bottom {text-align: center;margin-top: 30px;border-top: 1px solid rgba(255,255,255,0.2);padding-top: 15px;font-size: 14px;color: #aaa;}
+  </style>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    <a class="brand" href="#">
+      <img src="30716-Cherry.png" alt="Logo" style="height:40px; width:auto;" />
+    </a>
+    <button class="hamburger" aria-expanded="false" aria-label="Toggle menu"><span></span></button>
+    <ul class="nav-links">
+      <li><a class="active" href="#">Home</a></li>
+      <li><a href="#layanan-kami">Promo</a></li>
+      <li><a href="#produk-kami">Harga</a></li>
+    </ul>
+    <a href="https://wa.me/6285158449524?text=Halo!!%2C%20Ka%20Zefa%20mau%20tanya%20harga%20terbaru%20dan%20promo%20Chery" class="cta">Booking</a>
+  </nav>
+
+  <!-- Carousel -->
+  <div class="carousel">
+    <div class="carousel-track">
+      <div class="carousel-slide"><img src="Chery-TIGGO-9-CSH-2993323800.png" alt="Slide 1"></div>
+      <div class="carousel-slide"><img src="slide2new.png" alt="Slide 2"></div>
+      <div class="carousel-slide"><img src="chery-omoda-e5-front-deep-low-angle-view-103349.png" alt="Slide 3"></div>
+    </div>
+    <button class="prev">&#10094;</button>
+    <button class="next">&#10095;</button>
+    <div class="carousel-indicators"></div>
+  </div>
+
+  <div style="max-width: 1600px; margin: 20px auto; background: #fff; border-radius: 8px; 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1); overflow: hidden; font-family: Arial, sans-serif;">
+  
+  <div style="max-width: 800px; margin: 0 auto; text-align: center;">
+
+  <!-- Gambar -->
+  <img 
+    src="WhatsApp Image 2025-09-12 at 20.10.07.jpg" 
+    alt="Chery Solo" 
+    style="max-width: 60%; height: auto; border-radius: 8px; 
+           box-shadow: 0 2px 8px rgba(0,0,0,0.2); display: block; margin: 0 auto;">
+  
+  <!-- Deskripsi -->
+  <div style="padding: 15px; color: #333; text-align: left;">
+    <h2 style="margin: 0; font-size: 20px; font-weight: bold;">CHERY SOLO</h2>
+    <p style="margin: 10px 0; font-size: 14px; line-height: 1.5;">
+      Chery Solo  PT. Pradipta Cakra Buana merupakan dealer resmi 
+      mobil Chery yang beralamat di JL. Ir. Soekarno RT.05 / RW.04 (Kawasan The Park) Madegondo, Grogol, Sukoharjo
+    </p>
+    <p style="margin: 10px 0; font-size: 14px; line-height: 1.5;">
+      Chery Solo memberikan layanan 3S yaitu Sales, Service, dan Sparepart untuk melayani 
+      penjualan kendaraan penumpang merk Chery seperti <b>Omoda E5</b>, <b>Omoda C5</b>, <b>Tiggo 9 CSH</b>, <b>Tiggo 8 CSH</b>, <b>Tiggo 8</b>, 
+      <b>Tiggo 8 Pro Max</b>, <b>Tiggo 5X</b>, <b>Tiggo Cross</b>, <b>Chery J6</b>, dan <b>Chery C5</b>.
+    </p>
+  </div>
+
+</div>
+
+
+  <!-- Cards Section -->
+  <section id="produk-kami" class="cards-section">
+    <h2 style="text-align:center;margin-bottom:20px">Produk Kami</h2>
+    <button class="scroll-btn left">&#10094;</button>
+    <div class="cards-container">
+
+      <div class="card">
+        <img src="Chery-TIGGO-9-CSH-2993323800.png" alt="Card 5">
+        <h3>TIGGO 9 CSH</h3>
+        <p>Desain futuristik dan hemat energi.</p>
+        <button onclick="openModal(
+    'Chery-TIGGO-9-CSH-2993323800.png',
+    'TIGGO 9 CSH',
+    ['Rp 729.900.000 (REGULER)']
+  )">Lihat Detail</button>
+      </div>
+      <div class="card">
+        <img src="tiggo-8-csh.png" alt="Card 9">
+        <h3>TIGGO 8 CSH</h3>
+        <p>Performa bertenaga, desain elegan.</p>
+        <button onclick="openModal(
+    'tiggo-8-csh.png',
+    'TIGGO 8 CSH',
+    ['Rp 529.900.000 (REGULER)']
+  )">Lihat Detail</button>
+      </div>
+      <div class="card">
+        <img src="J6-img-05.png" alt="Card 7">
+        <h3>CHERY J6</h3>
+        <p>Desain futuristik dan hemat energi.</p>
+        <button onclick="openModal(
+    'J6-img-05.png',
+    'CHERY J6',
+    ['Rp 515.500.000 (RWD)', 'Rp 575.500.000 (IWD)']
+  )">Lihat Detail</button>
+      </div>
+      <div class="card">
+        <img src="chery-tiggo-cross-front-angle-low-view-441026.png" alt="Card 10">
+        <h3>TIGGO CROSS</h3>
+        <p>Performa tangguh, desain sporty.</p>
+        <button onclick="openModal(
+    'chery-tiggo-cross-front-angle-low-view-441026.png',
+    'TIGGO CROSS',
+    ['Rp 329.800.000 (CROSS CSH)', 'Rp 309.900.000 (CROSS SPORT)', 'Rp 299.500.000 (CROSS PREMIUM)', 'Rp 269.900.000 (CROSS COMFORT)']
+  )">Lihat Detail</button>
+      </div>
+      <div class="card">
+        <img src="chery-omoda-e5-front-deep-low-angle-view-103349.png" alt="Card 2">
+        <h3>OMODA E5</h3>
+        <p>Elegan dan nyaman untuk keluarga modern.</p>
+        <button onclick="openModal(
+    'chery-omoda-e5-front-deep-low-angle-view-103349.png',
+    'CHERRY  E5',
+    ['Rp 379.900.000 (E5 PURE)', 'Rp 409.900.000 (E5 HIGHTRIME)']
+  )">Lihat Detail</button>
+      </div>
+      <div class="card">
+  <img src="Chery-OMODA-5-3.jpg" alt="Card 1">
+  <h3>OMODA C5</h3>
+  <p>Mobil SUV sporty dengan performa tinggi.</p>
+  <button onclick="openModal(
+    'Chery-OMODA-5-3.jpg',
+    'OMODA 5',
+    ['Rp 469.800.000 (GD FWD)', 'Rp 510.000.000 (GT AWD)']
+  )">Lihat Detail</button>
+    </div>
+      
+      <div class="card">
+        <img src="chery-tiggo-5x-front-angle-low-view-645135.png" alt="Card 3">
+        <h3>TIGGO 5X</h3>
+        <p>Desain futuristik dan hemat energi.</p>
+        <button onclick="openModal(
+    'chery-tiggo-5x-front-angle-low-view-645135.png',
+    'TIGGO 5X',
+    ['Rp 267.000.000 (CLASSIC)', 'Rp 299.500.000 (CHAMPION)']
+  )">Lihat Detail</button>
+      </div>
+      <div class="card">
+        <img src="chery-tiggo-8-pro-max-front-medium-view-249389.png" alt="Card 4">
+        <h3>TIGGO 8 PRO MAX</h3>
+        <p>Desain futuristik dan hemat energi.</p>
+        <button onclick="openModal(
+    'chery-tiggo-8-pro-max-front-medium-view-249389.png',
+    'TIGGO 8 PRO MAX',
+    ['Rp 593.500.000 (PREMIUM FWD)']
+  )">Lihat Detail</button>
+      </div>
+      
+      <div class="card">
+        <img src="chery-c5-front-angle-low-view-662781.png" alt="Card 6">
+        <h3>CHERY C5</h3>
+        <p>Desain futuristik dan hemat energi.</p>
+        <button onclick="openModal(
+    'chery-c5-front-angle-low-view-662781.png',
+    'CHERY C5',
+    ['Rp 329.900.000 (Z SINGLE TON)', 'Rp 359.900.000 (RZ SINGLE TON)','364.900.000(RZ TWO ONE)']
+  )">Lihat Detail</button>
+      </div>
+      
+      <div class="card">
+        <img src="tiggo8ca.jpg" alt="Card 8">
+        <h3>TIGGO 8</h3>
+        <p>Desain futuristik dan hemat energi.</p>
+        <button onclick="openModal(
+    'tiggo8ca.jpg',
+    'TIGGO 8',
+    ['Rp 372.500.000 (COMFORT)', 'Rp 412.500.000 (PREMIUM)']
+  )">Lihat Detail</button>
+      </div>
+      
+      
+      <!-- Tambahkan card lain sesuai kebutuhan -->
+    </div>
+    <button class="scroll-btn right">&#10095;</button>
+  </section>
+
+  <a href="https://wa.me/6285158449524?text=Halo!!%2C%20Ka%20Zefa%20mau%20tanya%20harga%20terbaru%20dan%20promo%20Chery" target="_blank" 
+   style="position:fixed;width:60px;height:60px;bottom:20px;right:20px;
+          background-color:#25d366;border-radius:50%;text-align:center;
+          box-shadow:2px 2px 5px #999;z-index:100;">
+  <img src="whatsapp.png" alt="WhatsApp" 
+       style="width:35px;margin-top:12px;">
+</a>
+  <!-- Modal -->
+  <div id="detailModal">
+    <div id="modalContent">
+      <span class="close" onclick="closeModal()">&times;</span>
+      <img id="modalImg" src="" alt="Detail">
+      <h3 id="modalTitle"></h3>
+      <p id="modalPrice"></p>
+    </div>
+  </div>
+
+  <!-- Feature Section -->
+  <section id="layanan-kami" class="features-section">
+    <h2 style="text-align:center;margin-bottom:30px">Layanan Kami</h2>
+    <div class="features-grid">
+      <div class="feature-card"><a href="https://wa.me/6285158449524?text=Halo!!%2C%20Ka%20Zefa%20mau%20tanya%20info%20terbaru%20test%20drive%mobil%20Chery">Test drive</a></div>
+      <div class="feature-card"><a href="https://wa.me/6285158449524?text=Halo!!%2C%20Ka%20Zefa%20mau%20tanya%20harga%20terbaru%20dan%20promo%20Chery">Promo</a></div>
+      <div class="feature-card"><a href="https://wa.me/6285158449524?text=Halo!!%2C%20Ka%20Zefa%20mau%20tanya%20terkait%20simulasi%20kredit%20mobil%20Chery">Credit Simulation</a></div>
+      <div class="feature-card"><a href="https://wa.me/6285158449524?text=Halo!!%2C%20Ka%20Zefa%20mau%20tanya%20service%20list%20terbaru%20mobil%20Chery">Service List</a></div>
+    </div>
+  </section>
+
+  <!-- Lokasi Section -->
+  <section id="lokasi" style="padding:60px 20px;background:#f9fafb;text-align:center">
+    <h2 style="margin-bottom:20px">Lokasi Kami</h2>
+    <div style="max-width:1000px;margin:0 auto;display:flex;flex-wrap:wrap;gap:20px;align-items:flex-start;justify-content:center">
+      <!-- Map -->
+      <div style="flex:1;min-width:300px">
+        <iframe src="https://maps.google.com/maps?width=100%25&amp;height=600&amp;hl=en&amp;q=Jl.%20Ir.%20Soekarno,%20Dusun%20II,%20Madegondo,%20Kec.%20Grogol,%20Kabupaten%20Sukoharjo,%20Jawa%20Tengah%2057552+(Chery%20Solo%20Baru)&amp;t=&amp;z=14&amp;ie=UTF8&amp;iwloc=B&amp;output=embed" width="100%" height="350" style="border:0;border-radius:12px" allowfullscreen loading="lazy"></iframe>
+      </div>
+      <!-- Info Lokasi -->
+      <div style="flex:1;min-width:250px;text-align:left;background:#fff;padding:20px;border-radius:12px;box-shadow:0 6px 12px rgba(16,24,40,0.06)">
+        <h3 style="margin-bottom:10px;color:#e11d23"><i class="fas fa-map-marker-alt"></i> Alamat</h3>
+        <p>Jl. Ir. Soekarno, Dusun II, Madegondo, Kec. Grogol, Kabupaten Sukoharjo, Jawa Tengah 57552</p>
+        <h3 style="margin:20px 0 10px;color:#e11d23"><i class="fas fa-phone"></i> Kontak</h3>
+        <p>WA: 085158449524</p>
+        <h3 style="margin:20px 0 10px;color:#e11d23"><i class="fas fa-clock"></i> Jam Operasional</h3>
+        <p>Senin – Minggu: 09.00 – 21.00 WIB</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-container">
+      <div class="footer-col">
+        <h3><i class="fas fa-map-marker-alt"></i> Showroom</h3>
+        <p>Jl. Ir. Soekarno, Dusun II, Madegondo, Kec. Grogol, Kabupaten Sukoharjo, Jawa Tengah 57552</p>
+        <div class="social-icons">
+          <a href="https://www.instagram.com/chery_solozefa"><i class="fab fa-instagram"></i></a>
+          <a href="https://www.tiktok.com/@zefa_cherysolo"><i class="fab fa-tiktok"></i></a>
+        </div>
+      </div>
+      <div class="footer-col">
+        <h3>Model Chery</h3>
+        <ul>
+          <li><a href="#">TIGGO 9 CSH</a></li>
+          <li><a href="#">TIGGO 8 CSH</a></li>
+          <li><a href="#">OMODA 5 GT</a></li>
+          <li><a href="#">CHERY J6</a></li>
+          <li><a href="#">TIGGO CROSS</a></li>
+          <li><a href="#">OMODA E5</a></li>
+          <li><a href="#">OMODA C5</a></li>
+          <li><a href="#">TIGGO 5X</a></li>
+          <li><a href="#">TIGGO 8 PRO MAX</a></li>
+          <li><a href="#">CHERY C5</a></li>
+          <li><a href="#">TIGGO 8</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h3>Purna Jual</h3>
+        <ul>
+          <li><a href="https://wa.me/6285158449524?text=Halo!!%2C%20Ka%20Zefa%20mau%20tanya%20harga%20terbaru%20dan%20promo%20Chery">Promo</a></li>
+          <li><a href="https://wa.me/6285158449524?text=Halo!!%2C%20Ka%20Zefa%20mau%20tanya%20info%20terbaru%20test%20drive%20mobil%20Chery">Test Drive</a></li>
+          <li><a href="https://wa.me/6285158449524?text=Halo!!%2C%20Ka%20Zefa%20mau%20tanya%20harga%20terbaru%20dan%20promo%20Chery">Booking Service</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2025 Chery Solo Baru</p>
+    </div>
+  </footer>
+
+  <script>
+  // Navbar
+  const btn = document.querySelector('.hamburger');
+  const menu = document.querySelector('.nav-links');
+  btn.addEventListener('click', () => {
+    const expanded = btn.getAttribute('aria-expanded') === 'true' || false;
+    btn.setAttribute('aria-expanded', !expanded);
+    menu.classList.toggle('show');
+  });
+
+  // Carousel
+  const track = document.querySelector('.carousel-track');
+  const slides = Array.from(track.children);
+  const prevButton = document.querySelector('.carousel .prev');
+  const nextButton = document.querySelector('.carousel .next');
+  const indicators = document.querySelector('.carousel-indicators');
+  let currentIndex = 0;
+
+  slides.forEach((_, i) => {
+    const dot = document.createElement('div');
+    if (i === 0) dot.classList.add('active');
+    dot.addEventListener('click', () => showSlide(i));
+    indicators.appendChild(dot);
+  });
+
+  function showSlide(index) {
+    track.style.transform = `translateX(-${100 * index}%)`;
+    indicators.querySelectorAll('div').forEach((dot, i) => {
+      dot.classList.toggle('active', i === index);
+    });
+    currentIndex = index;
+  }
+
+  prevButton.addEventListener('click', () => {
+    const newIndex = (currentIndex - 1 + slides.length) % slides.length;
+    showSlide(newIndex);
+  });
+
+  nextButton.addEventListener('click', () => {
+    const newIndex = (currentIndex + 1) % slides.length;
+    showSlide(newIndex);
+  });
+
+  setInterval(() => {
+    const newIndex = (currentIndex + 1) % slides.length;
+    showSlide(newIndex);
+  }, 5000);
+
+  // Cards scroll
+  const cardsContainer = document.querySelector('.cards-container');
+  document.querySelector('.scroll-btn.left').addEventListener('click', () => {
+    cardsContainer.scrollBy({ left: -300, behavior: 'smooth' });
+  });
+  document.querySelector('.scroll-btn.right').addEventListener('click', () => {
+    cardsContainer.scrollBy({ left: 300, behavior: 'smooth' });
+  });
+
+  // Modal
+  function openModal(imgSrc, title, prices) {
+  document.getElementById('modalImg').src = imgSrc;
+  document.getElementById('modalTitle').textContent = title;
+
+  const modalPrice = document.getElementById('modalPrice');
+
+  // Kalau prices berupa array → tampilkan sebagai list
+  if (Array.isArray(prices)) {
+    modalPrice.innerHTML = prices.map(p => `<div>${p}</div>`).join('');
+  } else {
+    // Kalau cuma 1 harga biasa
+    modalPrice.textContent = prices;
+  }
+
+  document.getElementById('detailModal').style.display = 'flex';
+}
+
+  function closeModal() {
+    document.getElementById('detailModal').style.display = 'none';
+  }
+
+  // Tutup modal kalau klik di luar konten
+  window.addEventListener('click', (e) => {
+    const modal = document.getElementById('detailModal');
+    if (e.target === modal) {
+      closeModal();
+    }
+  });
+</script>
+</body>
+</html>
